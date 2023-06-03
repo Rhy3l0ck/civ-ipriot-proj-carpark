@@ -8,6 +8,8 @@ import threading
 import time
 import tkinter as tk
 from typing import Iterable
+import paho.mqtt.client as paho
+
 
 # ------------------------------------------------------------------------------------#
 # You don't need to understand how to implement this class, just how to use it.       #
@@ -40,10 +42,9 @@ class WindowedDisplay:
 
         self.gui_elements = {}
         for i, field in enumerate(self.display_fields):
-
             # create the elements
             self.gui_elements[f'lbl_field_{i}'] = tk.Label(
-                self.window, text=field+self.SEP, font=('Arial', 50))
+                self.window, text=field + self.SEP, font=('Arial', 50))
             self.gui_elements[f'lbl_value_{i}'] = tk.Label(
                 self.window, text=self.DISPLAY_INIT, font=('Arial', 50))
 
@@ -66,6 +67,7 @@ class WindowedDisplay:
                     text=updated_values[self.gui_elements[field].cget('text').rstrip(self.SEP)])
         self.window.update()
 
+
 # -----------------------------------------#
 # TODO: STUDENT IMPLEMENTATION STARTS HERE #
 # -----------------------------------------#
@@ -75,6 +77,12 @@ class CarParkDisplay:
     """Provides a simple display of the car park status. This is a skeleton only. The class is designed to be customizable without requiring and understanding of tkinter or threading."""
     # determines what fields appear in the UI
     fields = ['Available bays', 'Temperature', 'At']
+
+    def on_message_callback(self, client, userdata, message):
+        msg = message
+        msg_data = str(msg.payload.decode("UTF-8"))
+        print(msg_data)
+        return msg_data
 
     def __init__(self):
         self.window = WindowedDisplay(
@@ -86,16 +94,33 @@ class CarParkDisplay:
 
     def check_updates(self):
         # TODO: This is where you should manage the MQTT subscription
+        available_bays = 192
+        BROKER, PORT = "localhost", 1883
+        client = paho.Client()
+        client.connect(BROKER, PORT)
+        client.subscribe("lot/sensor")
         while True:
+            msg_data = self.on_message_callback
+            if msg_data == "Car goes out":
+                if available_bays == 192:
+                    print("Carpark is Empty")
+                else:
+                    available_bays = available_bays + 1
+            if msg_data == "Car goes in":
+                if available_bays == 0:
+                    print("Carpark is Full")
+                else:
+                    available_bays = available_bays - 1
             # NOTE: Dictionary keys *must* be the same as the class fields
             field_values = dict(zip(CarParkDisplay.fields, [
-                f'{random.randint(0, 150):03d}',
+                f'{available_bays}',
                 f'{random.randint(0, 45):02d}℃',
                 time.strftime("%H:%M:%S")]))
             # Pretending to wait on updates from MQTT
             time.sleep(random.randint(1, 10))
             # When you get an update, refresh the display.
             self.window.update(field_values)
+            client.loop_forever()
 
 
 class CarDetector:
@@ -109,18 +134,27 @@ class CarDetector:
             self.root, text='🚘 Incoming Car', font=('Arial', 50), cursor='right_side', command=self.incoming_car)
         self.btn_incoming_car.pack(padx=10, pady=5)
         self.btn_outgoing_car = tk.Button(
-            self.root, text='Outgoing Car 🚘',  font=('Arial', 50), cursor='bottom_left_corner', command=self.outgoing_car)
+            self.root, text='Outgoing Car 🚘', font=('Arial', 50), cursor='bottom_left_corner',
+            command=self.outgoing_car)
         self.btn_outgoing_car.pack(padx=10, pady=5)
 
         self.root.mainloop()
 
     def incoming_car(self):
         # TODO: implement this method to publish the detection via MQTT
-        print("Car goes in")
+        BROKER, PORT = "localhost", 1883
+        client = paho.Client()
+        keep_alive = 40
+        client.connect(BROKER, PORT, keep_alive)
+        client.publish("lot/sensor", "Car goes in")
 
     def outgoing_car(self):
-        # TODO: implement this method to publish the detection via MQTT
-        print("Car goes out")
+        # TODO: implement this method to publish the detection via MQTT\
+        BROKER, PORT = "localhost", 1883
+        client = paho.Client()
+        keep_alive = 40
+        client.connect(BROKER, PORT, keep_alive)
+        client.publish("lot/sensor", "Car goes out")
 
 
 if __name__ == '__main__':
