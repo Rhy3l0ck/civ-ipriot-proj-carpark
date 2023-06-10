@@ -1,0 +1,7 @@
+[broker]
+broker_host = '127.0.0.1'
+broker_port = 1883
+
+[location]
+name = "Moondalup City Square Parking"
+total_spaces = 192

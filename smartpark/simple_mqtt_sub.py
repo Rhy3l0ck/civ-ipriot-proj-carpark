@@ -1,6 +1,6 @@
 import paho.mqtt.client as paho
 
-BROKER, PORT = "localhost", 1883
+BROKER, PORT = "127.0.0.`1", 1883
 
 def on_message(client, userdata, msg):
     print(f'Received {msg.payload.decode()}')

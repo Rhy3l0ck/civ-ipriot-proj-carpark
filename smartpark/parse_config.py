@@ -31,8 +31,18 @@ Finally, you can use `yaml` if you prefer.
 
 """
 
-
+def get_config(filename: str="config.toml") -> dict:
+    import tomli
+    with open(filename, mode="rb") as fp:
+        config = tomli.load(fp)
+    return config
 
 def parse_config(config: dict) -> dict:
     """Parse the config file and return the values as a dictionary"""
-    return {'location': 'TBD', 'total_spaces': 0, 'broker_host': 'TBD', 'broker_port': 0}
+
+    return config
+
+c = get_config()
+p = parse_config(c)
+print(type(p))
+print(p)
