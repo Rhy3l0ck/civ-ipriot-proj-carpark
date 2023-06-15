@@ -42,5 +42,4 @@ class CarParkDisplay:
 
 
 if __name__ == '__main__':
-    # TODO: Run each of these classes in a separate terminal. You should see the CarParkDisplay update when you click the buttons in the CarDetector.
     CarParkDisplay()

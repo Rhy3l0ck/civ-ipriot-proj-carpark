@@ -1,5 +1,8 @@
 import paho.mqtt.client as paho
+
+
 class MqttDevice:
+
     def __init__(self, config):
         self.name = config['name']
         self.location = config['location']
@@ -15,7 +18,7 @@ class MqttDevice:
 
         # initialise a paho client and bind it to the object (has-a)
 
-        self.client = paho.Client()
+        self.client = paho.Client(self.name)
         self.client.connect(self.broker,
                             self.port)
 

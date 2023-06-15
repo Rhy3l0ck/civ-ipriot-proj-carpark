@@ -10,74 +10,75 @@ class CarPark(mqtt_device.MqttDevice):
 
     def __init__(self, config):
         super().__init__(config)
-        self.total_spaces = config['total-spaces']
-        self.total_cars = config['total-cars']
+        carpark_name = config['broker']['location']
+        self.total_spaces = config[carpark_name]['total-spaces']
+        self.total_cars = config.get(f"{carpark_name}.total-cars", 0)
+        self._temperature = None
+        print(f"Carpark ar {carpark_name} is ready")
         self.client.on_message = self.on_message
         self.client.subscribe('sensor')
         self.client.loop_forever()
         self._temperature = None
 
-    @property
-    def available_spaces(self):
-        available = self.total_spaces - self.total_cars
-        return max(available, 0)
 
-    @property
-    def temperature(self):
-        self._temperature
+@property
+def available_spaces(self):
+    available = self.total_spaces - self.total_cars
+    return max(available, 0)
 
-    @temperature.setter
-    def temperature(self, value):
-        self._temperature = value
 
-    def _publish_event(self):
-        readable_time = datetime.now().strftime('%H:%M')
-        print(
-            (
+@property
+def temperature(self):
+    self._temperature
+
+
+@temperature.setter
+def temperature(self, value):
+    self._temperature = value
+
+
+def _publish_event(self):
+    readable_time = datetime.now().strftime('%H:%M')
+    print(
+        (
                 f"TIME: {readable_time}, "
                 + f"SPACES: {self.available_spaces}, "
                 + "TEMPC: 42"
-            )
         )
-        message = (
+    )
+    message = (
             f"TIME: {readable_time}, "
             + f"SPACES: {self.available_spaces}, "
             + "TEMPC: 42"
-        )
-        self.client.publish('display', message)
-
-    def on_car_entry(self):
-        self.total_cars += 1
-        self._publish_event()
+    )
+    self.client.publish('display', message)
 
 
+def on_car_entry(self):
+    self.total_cars += 1
+    self._publish_event()
 
-    def on_car_exit(self):
-        self.total_cars -= 1
-        self._publish_event()
 
-    def on_message(self, client, userdata, msg: MQTTMessage):
-        payload = msg.payload.decode()
-        # TODO: Extract temperature from payload
-        # self.temperature = ... # Extracted value
-        if 'exit' in payload:
-            self.on_car_exit()
-        else:
-            self.on_car_entry()
+def on_car_exit(self):
+    self.total_cars -= 1
+    self._publish_event()
+
+
+def on_message(self, client, userdata, msg: MQTTMessage):
+    payload = msg.payload.decode()
+    # TODO: Extract temperature from payload
+    # self.temperature = ... # Extracted  value
+    if 'exit' in payload:
+        self.on_car_exit()
+    else:
+        self.on_car_entry()
 
 
 if __name__ == '__main__':
-    config = {'name': "raf-park",
-              'total-spaces': 130,
-              'total-cars': 0,
-              'location': 'L306',
-              'topic-root': "lot",
-              'broker': 'localhost',
-              'port': 1883,
-              'topic-qualifier': 'entry',
-              'is_stuff': False
-              }
+    from parse_config import parse_config
+
+    config = parse_config("config.toml")
     # TODO: Read config from file
-    car_park = CarPark(config)
+    car_park = CarPark(config['broker']['location'])
     print("Carpark initialized")
     print("Carpark initialized")

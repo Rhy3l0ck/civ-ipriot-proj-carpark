@@ -28,7 +28,7 @@ class CarDetector:
         print("Car goes in")
 
     def outgoing_car(self):
-        # TODO: implement this method to publish the detection via MQTT\
+        # TODO: implement this method to publish the detection via MQTT
         print("Car goes out")
 
 if __name__ == '__main__':
