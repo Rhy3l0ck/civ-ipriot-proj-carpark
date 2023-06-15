@@ -6,6 +6,6 @@ topic-qualifier = "controller"
 name = 'parking-lot'
 location = 'MOO'
 
-[location]
+[MOO]
 name = "Moondalup City Square Parking"
-total_spaces = 192
+total-spaces = 192
