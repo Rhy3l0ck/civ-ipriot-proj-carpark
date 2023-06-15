@@ -4,7 +4,7 @@ import time
 import tkinter as tk
 from typing import Iterable
 import paho.mqtt.client as paho
-from no_pi import WindowedDisplay
+from windowed_display import WindowedDisplay
 
 class CarParkDisplay:
     """Provides a simple display of the car park status. This is a skeleton only. The class is designed to be customizable without requiring and understanding of tkinter or threading."""

@@ -4,7 +4,7 @@ import time
 import tkinter as tk
 from typing import Iterable
 import paho.mqtt.client as paho
-from no_pi import WindowedDisplay
+from windowed_display import WindowedDisplay
 
 class CarDetector:
     """Provides a couple of simple buttons that can be used to represent a sensor detecting a car. This is a skeleton only."""
