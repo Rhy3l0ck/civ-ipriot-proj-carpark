@@ -1,15 +1,12 @@
-import random
-import threading
-import time
 import tkinter as tk
-from typing import Iterable
-import paho.mqtt.client as paho
-from windowed_display import WindowedDisplay
+from mqtt_device import MqttDevice
 
-class CarDetector:
+
+class CarDetector(MqttDevice):
     """Provides a couple of simple buttons that can be used to represent a sensor detecting a car. This is a skeleton only."""
 
-    def __init__(self):
+    def __init__(self, config):
+        super().__init__(config['broker'])
         self.root = tk.Tk()
         self.root.title("Car Detector ULTRA")
 
@@ -20,16 +17,18 @@ class CarDetector:
             self.root, text='Outgoing Car 🚘', font=('Arial', 50), cursor='bottom_left_corner',
             command=self.outgoing_car)
         self.btn_outgoing_car.pack(padx=10, pady=5)
-
+        self.mqtt_detector = MqttDevice(config['broker'])
         self.root.mainloop()
 
     def incoming_car(self):
-        # TODO: implement this method to publish the detection via MQTT
-        print("Car goes in")
+        self.mqtt_detector.client.publish("Car goes in")
 
     def outgoing_car(self):
-        # TODO: implement this method to publish the detection via MQTT
-        print("Car goes out")
+        self.mqtt_detector.client.publish("Car goes out")
+
 
 if __name__ == '__main__':
-    CarDetector()
+    from config_parser import parse_config
+
+    config = parse_config("config.toml")
+    CarDetector(config)
