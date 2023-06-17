@@ -2,9 +2,10 @@
 broker = "127.0.0.1"
 port = 1883
 topic-root = 'carpark'
-topic-qualifier = "controller"
+topic-qualifier = 'controller'
 name = 'parking-lot'
 location = 'MOO'
+topic-final = 'carpark/controller'
 
 [MOO]
 name = "Moondalup City Square Parking"

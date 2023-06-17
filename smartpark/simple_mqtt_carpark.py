@@ -15,11 +15,14 @@ class CarPark(mqtt_device.MqttDevice):
         self.total_cars = config.get(f"{carpark_name}.total-cars", 0)
         self._temperature = None
         print(f"Carpark at {carpark_name} is ready")
+        print(f"Topic/Channel is {self.topic}")
+        print(f"Listening on {config['broker']}")
+        print(f"{config['broker']['topic-root']}/{config['broker']['topic-qualifier']}")
         self.client.on_message = self.on_message
-        self.client.subscribe('sensor')
         self.client.loop_forever()
 
-    @property
+
+
     def available_spaces(self):
         available = self.total_spaces - self.total_cars
         return max(available, 0)
@@ -36,27 +39,30 @@ class CarPark(mqtt_device.MqttDevice):
         readable_time = datetime.now().strftime('%H:%M')
         print(
             (
-                f"TIME: {readable_time}, "
-                + f"SPACES: {self.available_spaces}, "
-                + "TEMPC: 42"
+                    f"TIME: {readable_time}, "
+                    + f"SPACES: {self.available_spaces}, "
+                    + "TEMPC: 42"
             )
         )
         message = (
-            f"TIME: {readable_time}, "
-            + f"SPACES: {self.available_spaces}, "
-            + "TEMPC: 42"
+                f"TIME: {readable_time}, "
+                + f"SPACES: {self.available_spaces}, "
+                + "TEMPC: 42"
         )
         self.client.publish('display', message)
 
     def on_car_entry(self):
         self.total_cars += 1
+        print(self.total_cars)
         self._publish_event()
 
     def on_car_exit(self):
         self.total_cars -= 1
+        print(self.total_cars)
         self._publish_event()
 
     def on_message(self, client, userdata, msg: MQTTMessage):
+        print(msg)
         payload = msg.payload.decode()
         # TODO: Extract temperature from payload
         # self.temperature = ... # Extracted  value
@@ -71,5 +77,4 @@ if __name__ == '__main__':
 
     config = parse_config("config.toml")
     car_park = CarPark(config)
-    print("Carpark initialized")
     print("Carpark initialized")

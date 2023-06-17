@@ -1,5 +1,6 @@
 import tkinter as tk
 from mqtt_device import MqttDevice
+import paho.mqtt.client as paho
 
 
 class CarDetector(MqttDevice):
@@ -17,14 +18,20 @@ class CarDetector(MqttDevice):
             self.root, text='Outgoing Car 🚘', font=('Arial', 50), cursor='bottom_left_corner',
             command=self.outgoing_car)
         self.btn_outgoing_car.pack(padx=10, pady=5)
-        self.mqtt_detector = MqttDevice(config['broker'])
+        self.topic = config['broker']['topic-final']
+        self.broker = config['broker']['broker']
+        self.port = config['broker']['port']
+        self.mqtt_detector = paho.Client()
+        self.mqtt_detector.connect(self.broker, self.port)
         self.root.mainloop()
 
     def incoming_car(self):
-        self.mqtt_detector.client.publish("Car goes in")
+        self.mqtt_detector.publish(self.topic, "Car goes in")
+        print("Car has entered")
 
     def outgoing_car(self):
-        self.mqtt_detector.client.publish("Car goes out")
+        self.mqtt_detector.publish(self.topic, "Car goes out")
+        print("Car has exited")
 
 
 if __name__ == '__main__':
