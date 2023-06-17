@@ -6,7 +6,7 @@ from paho.mqtt.client import MQTTMessage
 
 
 class CarPark(mqtt_device.MqttDevice):
-    """Creates a carpark object to stor  the state of cars in the lot"""
+    """Creates a carpark object to store the state of cars in the lot"""
 
     def __init__(self, config):
         super().__init__(config['broker'])
@@ -15,13 +15,11 @@ class CarPark(mqtt_device.MqttDevice):
         self.total_cars = config.get(f"{carpark_name}.total-cars", 0)
         self._temperature = None
         print(f"Carpark at {carpark_name} is ready")
-        print(f"Topic/Channel is {self.topic}")
-        print(f"Listening on {config['broker']}")
-        print(f"{config['broker']['topic-root']}/{config['broker']['topic-qualifier']}")
-        self.client.on_message = self.on_message
-        self.client.loop_forever()
-
-
+        self.mqtt_carpark = paho.Client()
+        self.mqtt_carpark.connect(config['broker']['broker'], config['broker']['port'])
+        self.mqtt_carpark.subscribe(config['broker']['topic-final'])
+        self.mqtt_carpark.on_message = self.on_message
+        self.mqtt_carpark.loop_forever()
 
     def available_spaces(self):
         available = self.total_spaces - self.total_cars
@@ -49,16 +47,14 @@ class CarPark(mqtt_device.MqttDevice):
                 + f"SPACES: {self.available_spaces}, "
                 + "TEMPC: 42"
         )
-        self.client.publish('display', message)
+        self.mqtt_carpark.publish('display', message)
 
     def on_car_entry(self):
         self.total_cars += 1
-        print(self.total_cars)
         self._publish_event()
 
     def on_car_exit(self):
         self.total_cars -= 1
-        print(self.total_cars)
         self._publish_event()
 
     def on_message(self, client, userdata, msg: MQTTMessage):
@@ -66,9 +62,9 @@ class CarPark(mqtt_device.MqttDevice):
         payload = msg.payload.decode()
         # TODO: Extract temperature from payload
         # self.temperature = ... # Extracted  value
-        if 'exit' in payload:
+        if 'exited' in payload:
             self.on_car_exit()
-        else:
+        elif 'entered' in payload:
             self.on_car_entry()
 
 

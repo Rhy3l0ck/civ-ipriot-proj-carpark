@@ -34,11 +34,14 @@ class CarParkDisplay:
         mqtt_sub = paho.Client()
         mqtt_sub.connect(broker, port)
         mqtt_sub.subscribe(topic)
+
         while True:
             mqtt_sub.on_message = self.on_message_callback
+            msg_data = self.on_message_callback
+            print(msg_data)
             # NOTE: Dictionary keys *must* be the same as the class fields
             field_values = dict(zip(CarParkDisplay.fields, [
-                f'{0}',
+                f'{available_spaces}',
                 f'{random.randint(0, 45):02d}℃',
                 time.strftime("%H:%M:%S")]))
             # Pretending to wait on updates from MQTT

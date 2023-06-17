@@ -26,11 +26,11 @@ class CarDetector(MqttDevice):
         self.root.mainloop()
 
     def incoming_car(self):
-        self.mqtt_detector.publish(self.topic, "Car goes in")
+        self.mqtt_detector.publish(self.topic, "Car has entered")
         print("Car has entered")
 
     def outgoing_car(self):
-        self.mqtt_detector.publish(self.topic, "Car goes out")
+        self.mqtt_detector.publish(self.topic, "Car has exited")
         print("Car has exited")
 
 
