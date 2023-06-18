@@ -12,9 +12,16 @@ class CarParkDisplay:
 
     def on_message_callback(self, client, userdata, message):
         msg = message
-        msg_data = str(msg.payload.decode("UTF-8"))
-        print(msg_data)
-        return msg_data
+        payload = str(msg.payload.decode("UTF-8"))
+        if "has" not in payload:
+            # print(payload)
+            payload_split = payload.split()
+            display_dict = dict()
+            display_dict["Available bays"] = payload_split[3]
+            display_dict["Temperature"] = payload_split[5]
+            display_dict["At"] = payload_split[1]
+            print(display_dict)
+
 
     def __init__(self):
         self.window = WindowedDisplay(
@@ -37,11 +44,9 @@ class CarParkDisplay:
 
         while True:
             mqtt_sub.on_message = self.on_message_callback
-            msg_data = self.on_message_callback
-            print(msg_data)
             # NOTE: Dictionary keys *must* be the same as the class fields
             field_values = dict(zip(CarParkDisplay.fields, [
-                f'{available_spaces}',
+                f'{0}',
                 f'{random.randint(0, 45):02d}℃',
                 time.strftime("%H:%M:%S")]))
             # Pretending to wait on updates from MQTT

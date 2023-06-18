@@ -22,8 +22,11 @@ class CarPark(mqtt_device.MqttDevice):
         self.mqtt_carpark.loop_forever()
 
     def available_spaces(self):
-        available = self.total_spaces - self.total_cars
-        return max(available, 0)
+        self.available = self.total_spaces - self.total_cars
+        if self.available in range(0, 193):
+            return self.available
+
+
 
     @property
     def temperature(self):
@@ -38,24 +41,24 @@ class CarPark(mqtt_device.MqttDevice):
         print(
             (
                     f"TIME: {readable_time}, "
-                    + f"SPACES: {self.available_spaces}, "
+                    + f"SPACES: {self.available_spaces()}, "
                     + "TEMPC: 42"
             )
         )
         message = (
                 f"TIME: {readable_time}, "
-                + f"SPACES: {self.available_spaces}, "
+                + f"SPACES: {self.available_spaces()}, "
                 + "TEMPC: 42"
         )
-        self.mqtt_carpark.publish('display', message)
+        self.mqtt_carpark.publish(config['broker']['topic-final'], message)
 
     def on_car_entry(self):
-        self.total_cars += 1
-        self._publish_event()
+            self.total_cars += 1
+            self._publish_event()
 
     def on_car_exit(self):
-        self.total_cars -= 1
-        self._publish_event()
+            self.total_cars -= 1
+            self._publish_event()
 
     def on_message(self, client, userdata, msg: MQTTMessage):
         print(msg)
@@ -74,3 +77,31 @@ if __name__ == '__main__':
     config = parse_config("config.toml")
     car_park = CarPark(config)
     print("Carpark initialized")
+
+# TODO BELOW
+'''
+1.
+Set
+limiters
+to
+available
+bays
+
+2.
+have
+display
+read
+from the dictonary
+
+3.
+The
+above
+extract
+temperature
+
+4.
+Test Cases
+
+5.
+Check if done lol
+'''
