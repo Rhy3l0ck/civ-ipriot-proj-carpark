@@ -1,7 +1,7 @@
 import tkinter as tk
 from mqtt_device import MqttDevice
 import paho.mqtt.client as paho
-
+from random import randrange, uniform
 
 class CarDetector(MqttDevice):
     """Provides a couple of simple buttons that can be used to represent a sensor detecting a car. This is a skeleton only."""
@@ -26,11 +26,15 @@ class CarDetector(MqttDevice):
         self.root.mainloop()
 
     def incoming_car(self):
+        temp = uniform(19, 28)
         self.mqtt_detector.publish(self.topic, "Car has entered")
+        self.mqtt_detector.publish(self.topic, f"Temp in Carpark is {temp}")
         print("Car has entered")
 
     def outgoing_car(self):
+        temp = uniform(19, 28)
         self.mqtt_detector.publish(self.topic, "Car has exited")
+        self.mqtt_detector.publish(self.topic, f"Temp in Carpark is {temp}")
         print("Car has exited")
 
 

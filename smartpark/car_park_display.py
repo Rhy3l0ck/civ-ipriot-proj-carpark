@@ -9,19 +9,16 @@ class CarParkDisplay:
     """Provides a simple display of the car park status. This is a skeleton only. The class is designed to be customizable without requiring and understanding of tkinter or threading."""
     # determines what fields appear in the UI
     fields = ['Available bays', 'Temperature', 'At']
+    fields_dictonary = {}
 
-    def on_message_callback(self, client, userdata, message):
+    def payload_split(self, client, userdata, message):
         msg = message
         payload = str(msg.payload.decode("UTF-8"))
-        if "has" not in payload:
-            # print(payload)
+        if "Car" not in payload:
             payload_split = payload.split()
-            display_dict = dict()
-            display_dict["Available bays"] = payload_split[3]
-            display_dict["Temperature"] = payload_split[5]
-            display_dict["At"] = payload_split[1]
-            print(display_dict)
-
+            self.fields_dictonary[self.fields[0]] = payload_split[3]
+            self.fields_dictonary[self.fields[1]] = payload_split[5]
+            self.fields_dictonary[self.fields[2]] = payload_split[1]
 
     def __init__(self):
         self.window = WindowedDisplay(
@@ -30,6 +27,7 @@ class CarParkDisplay:
         updater.daemon = True
         updater.start()
         self.window.show()
+        self.payload_split = None
 
     def check_updates(self):
         # TODO: This is where you should manage the MQTT subscription
@@ -41,14 +39,14 @@ class CarParkDisplay:
         mqtt_sub = paho.Client()
         mqtt_sub.connect(broker, port)
         mqtt_sub.subscribe(topic)
-
         while True:
-            mqtt_sub.on_message = self.on_message_callback
+            mqtt_sub.on_message = self.payload_split
+            print(CarParkDisplay.fields[1])
             # NOTE: Dictionary keys *must* be the same as the class fields
             field_values = dict(zip(CarParkDisplay.fields, [
-                f'{0}',
-                f'{random.randint(0, 45):02d}℃',
-                time.strftime("%H:%M:%S")]))
+                f'{CarParkDisplay.fields_dictonary.get(CarParkDisplay.fields[0])}',
+                f'{CarParkDisplay.fields_dictonary.get(CarParkDisplay.fields[1])}℃',
+                f'{CarParkDisplay.fields_dictonary.get(CarParkDisplay.fields[2])}']))
             # Pretending to wait on updates from MQTT
             time.sleep(random.randint(1, 10))
             # When you get an update, refresh the display.

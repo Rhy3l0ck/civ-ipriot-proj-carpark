@@ -3,6 +3,7 @@ from datetime import datetime
 import mqtt_device
 import paho.mqtt.client as paho
 from paho.mqtt.client import MQTTMessage
+from random import uniform
 
 
 class CarPark(mqtt_device.MqttDevice):
@@ -13,7 +14,9 @@ class CarPark(mqtt_device.MqttDevice):
         carpark_name = config['broker']['location']
         self.total_spaces = config[carpark_name]['total-spaces']
         self.total_cars = config.get(f"{carpark_name}.total-cars", 0)
-        self._temperature = None
+        self.temperature = None
+        if self.temperature is None:
+            self.temperature = round(uniform(19, 28))
         print(f"Carpark at {carpark_name} is ready")
         self.mqtt_carpark = paho.Client()
         self.mqtt_carpark.connect(config['broker']['broker'], config['broker']['port'])
@@ -26,11 +29,9 @@ class CarPark(mqtt_device.MqttDevice):
         if self.available in range(0, 193):
             return self.available
 
-
-
     @property
     def temperature(self):
-        self._temperature
+        return self._temperature
 
     @temperature.setter
     def temperature(self, value):
@@ -42,28 +43,31 @@ class CarPark(mqtt_device.MqttDevice):
             (
                     f"TIME: {readable_time}, "
                     + f"SPACES: {self.available_spaces()}, "
-                    + "TEMPC: 42"
+                    + f"TEMPC: {self.temperature}"
             )
         )
         message = (
                 f"TIME: {readable_time}, "
                 + f"SPACES: {self.available_spaces()}, "
-                + "TEMPC: 42"
+                + f"TEMPC: {self.temperature}"
         )
         self.mqtt_carpark.publish(config['broker']['topic-final'], message)
 
     def on_car_entry(self):
-            self.total_cars += 1
-            self._publish_event()
+        self.total_cars += 1
+        self._publish_event()
 
     def on_car_exit(self):
-            self.total_cars -= 1
-            self._publish_event()
+        self.total_cars -= 1
+        self._publish_event()
 
     def on_message(self, client, userdata, msg: MQTTMessage):
-        print(msg)
         payload = msg.payload.decode()
-        # TODO: Extract temperature from payload
+        if "Temp" in payload:
+            payload_split = payload.split('is')
+            temp = payload_split[1].strip()
+            temp = float(temp)
+            self.temperature = round(temp)
         # self.temperature = ... # Extracted  value
         if 'exited' in payload:
             self.on_car_exit()
@@ -76,32 +80,3 @@ if __name__ == '__main__':
 
     config = parse_config("config.toml")
     car_park = CarPark(config)
-    print("Carpark initialized")
-
-# TODO BELOW
-'''
-1.
-Set
-limiters
-to
-available
-bays
-
-2.
-have
-display
-read
-from the dictonary
-
-3.
-The
-above
-extract
-temperature
-
-4.
-Test Cases
-
-5.
-Check if done lol
-'''
