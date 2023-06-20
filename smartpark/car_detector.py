@@ -1,7 +1,7 @@
 import tkinter as tk
 from mqtt_device import MqttDevice
 import paho.mqtt.client as paho
-from random import randrange, uniform
+from random import uniform
 
 class CarDetector(MqttDevice):
     """Provides a couple of simple buttons that can be used to represent a sensor detecting a car. This is a skeleton only."""
@@ -21,21 +21,31 @@ class CarDetector(MqttDevice):
         self.topic = config['broker']['topic-final']
         self.broker = config['broker']['broker']
         self.port = config['broker']['port']
+        carpark_name = config['broker']['location']
+        self.total_cars = config.get(f"{carpark_name}.total-cars", 0)
         self.mqtt_detector = paho.Client()
         self.mqtt_detector.connect(self.broker, self.port)
         self.root.mainloop()
 
     def incoming_car(self):
-        temp = uniform(19, 28)
-        self.mqtt_detector.publish(self.topic, "Car has entered")
-        self.mqtt_detector.publish(self.topic, f"Temp in Carpark is {temp}")
-        print("Car has entered")
+        if self.total_cars < 192:
+            temp = uniform(19, 28)
+            self.mqtt_detector.publish(self.topic, "Car has entered")
+            self.mqtt_detector.publish(self.topic, f"Temp in Carpark is {temp}")
+            self.total_cars += 1
+            print("Car has entered")
+        else:
+            print("Carpark is full")
 
     def outgoing_car(self):
-        temp = uniform(19, 28)
-        self.mqtt_detector.publish(self.topic, "Car has exited")
-        self.mqtt_detector.publish(self.topic, f"Temp in Carpark is {temp}")
-        print("Car has exited")
+        if self.total_cars > 0:
+            temp = uniform(19, 28)
+            self.mqtt_detector.publish(self.topic, "Car has exited")
+            self.mqtt_detector.publish(self.topic, f"Temp in Carpark is {temp}")
+            self.total_cars -= 1
+            print("Car has exited")
+        else:
+            print("Carpark is empty")
 
 
 if __name__ == '__main__':
