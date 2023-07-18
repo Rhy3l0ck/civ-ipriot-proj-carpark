@@ -23,7 +23,6 @@ class CarParkDisplay:
         self.window.show()
 
     def check_updates(self):
-        # TODO: This is where you should manage the MQTT subscription
         while True:
             self.mqtt_sub.connect(self.broker, self.port)
             self.mqtt_sub.subscribe(self.topic)
